@@ -56,6 +56,11 @@ x-airflow-common:
   environment:
     &airflow-common-env
     PYTHONPATH: /opt/airflow
+    DW_POSTGRES_HOST: postgres-dw
+    DW_POSTGRES_PORT: 5432
+    DW_POSTGRES_DB: ${DW_POSTGRES_DB}
+    DW_POSTGRES_USER: ${DW_POSTGRES_USER}
+    DW_POSTGRES_PASSWORD: ${DW_POSTGRES_PASSWORD}
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
