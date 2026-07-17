@@ -115,6 +115,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres-dw-volume:/var/lib/postgresql/data
+      - ./sql/ddl:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DW_POSTGRES_USER} -d ${DW_POSTGRES_DB}"]
       interval: 10s
