@@ -1,2 +1,4 @@
 pyspark
 psycopg2-binary
+pyarrow
+sqlalchemy
