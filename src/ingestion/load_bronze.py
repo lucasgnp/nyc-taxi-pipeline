@@ -11,8 +11,8 @@ import csv
 import io
 import logging
 from pathlib import Path
-import pyarrow.parquet as pq
-from sqlalchemy import create_engine, text
+import pyarrow.parquet as pq # type: ignore
+from sqlalchemy import create_engine, text # type: ignore
 from src.common import config
 
 logger = logging.getLogger(__name__)
