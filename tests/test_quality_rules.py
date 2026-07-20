@@ -5,9 +5,9 @@ job, em vez de reimplementar as regras em Python puro (o que poderia divergir da
 implementação real).
 """
 
-import pytest
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
+import pytest # type: ignore
+from pyspark.sql import SparkSession # type: ignore
+from pyspark.sql import functions as F # type: ignore
 from src.transform.silver_yellow_tripdata import quality_rules
 
 
