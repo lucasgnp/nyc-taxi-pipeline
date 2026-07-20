@@ -124,35 +124,109 @@ Optei pelo dbt como projeto separado na raiz porque ele espera uma raiz própria
 
 ## Como executar
 
-O projeto inteiro sobe com Docker. Não é preciso instalar Python, Spark, dbt ou Postgres na máquina: tudo vive nos containers.
+Todo o projeto roda em contêineres Docker. Não é preciso instalar Python, Spark, dbt ou PostgreSQL na máquina: cada uma dessas ferramentas vive dentro de um contêiner. O único pré-requisito é ter o Docker funcionando.
 
-**Pré-requisitos:** Docker e Docker Compose.
+### Pré-requisitos
 
-1. Clone o repositório e copie o arquivo de exemplo de variáveis:
+- **Docker e Docker Compose.** É o único software que precisa estar instalado na máquina. A forma mais simples de obter os dois é instalar o [Docker Desktop](https://www.docker.com/products/docker-desktop/), que já inclui o Docker Compose. No Windows, o Docker Desktop roda sobre o WSL2 e o configura durante a instalação; em Linux e macOS, roda de forma nativa.
+- **Cerca de 8 GB de memória** disponíveis para os contêineres, já que o Airflow e o Spark rodam ao mesmo tempo.
 
-   ```
-   cp .env.example .env
-   ```
+Todos os comandos abaixo são executados em um terminal, a partir da pasta raiz do projeto (a pasta criada ao clonar o repositório).
 
-   Ajuste as senhas no `.env` se desejar. Para ambientes Linux, defina também o `AIRFLOW_UID` com o seu id de usuário.
+### Passo 1 — Clonar o repositório
 
-2. Construa as imagens e suba o ambiente:
+```
+git clone <url-do-repositorio>
+cd nyc-taxi-pipeline
+```
 
-   ```
-   docker compose build
-   docker compose up airflow-init
-   docker compose up -d
-   ```
+### Passo 2 — Configurar as variáveis de ambiente
 
-   O banco de dados do warehouse é criado já com os schemas das três camadas e as tabelas de referência, através dos scripts em `sql/ddl/`.
+O projeto lê credenciais e configurações de um arquivo `.env`, que não é versionado. Crie o seu a partir do modelo fornecido:
 
-3. Acesse o Airflow em `http://localhost:8080` (usuário e senha padrão: `airflow`).
+```
+cp .env.example .env
+```
 
-4. A DAG `nyc_taxi_pipeline` processa uma competência mensal por execução. Para carregar o histórico dos seis meses, é possível rodar cada competência individualmente, ou usar o backfill do Airflow.
+O arquivo já vem com valores padrão de desenvolvimento que funcionam. Em **Linux ou WSL2**, ajuste a variável `AIRFLOW_UID` para o id do seu usuário, de modo que os arquivos criados pelos contêineres (como os logs do Airflow) tenham o dono correto no seu sistema:
 
-O warehouse fica acessível em `localhost:5433` (usuário `taxi`, banco `nyc_taxi`) para inspeção via qualquer cliente PostgreSQL.
+```
+sed -i "s/^AIRFLOW_UID=.*/AIRFLOW_UID=$(id -u)/" .env
+```
 
-Fixei as versões de todas as imagens e dependências (PostgreSQL 16, Airflow 2.10.5, e assim por diante) para garantir que qualquer pessoa que rode o projeto obtenha exatamente o mesmo resultado que eu obtive.
+Em macOS ou Windows sem WSL, o valor padrão já funciona e este passo pode ser ignorado.
+
+### Passo 3 — Construir as imagens
+
+```
+docker compose build
+```
+
+Este passo constrói a imagem customizada do Airflow, que inclui o Java, o PySpark, o driver de conexão com o PostgreSQL e o dbt em ambiente isolado. Na primeira execução, o download das dependências leva alguns minutos. Ao final, as imagens devem aparecer como `Built`.
+
+### Passo 4 — Inicializar o Airflow
+
+```
+docker compose up airflow-init
+```
+
+Prepara o banco de metadados do Airflow e cria o usuário de acesso. Roda uma vez e encerra sozinho; ao final, deve exibir o código de saída zero (`exited with code 0`).
+
+### Passo 5 — Subir o ambiente
+
+```
+docker compose up -d
+```
+
+Sobe todos os serviços em segundo plano: o Airflow (scheduler, webserver e triggerer), o banco de metadados e o banco do data warehouse. Na primeira inicialização do banco do warehouse, os scripts em `sql/ddl/` são executados automaticamente, criando os schemas das três camadas e as tabelas de referência, sem nenhum passo manual.
+
+Confirme que os serviços subiram:
+
+```
+docker compose ps
+```
+
+Todos devem aparecer como `healthy` ou `running`. Para confirmar que os schemas foram criados:
+
+```
+docker compose exec postgres-dw psql -U taxi -d nyc_taxi -c "\dn"
+```
+
+Devem aparecer os schemas `bronze`, `silver` e `gold`.
+
+### Passo 6 — Executar o pipeline
+
+Acesse a interface do Airflow em `http://localhost:8080`, com usuário e senha `airflow`.
+
+A DAG `nyc_taxi_pipeline` processa uma competência mensal por execução, derivando o mês da data de execução. Para processar uma competência específica de ponta a ponta pela linha de comando:
+
+```
+docker compose exec airflow-scheduler airflow dags test nyc_taxi_pipeline 2025-06-15
+```
+
+O comando acima processa a competência de junho de 2025: baixa o arquivo Parquet, carrega na bronze, gera a silver com as regras de qualidade e atualiza a gold. O processamento leva alguns minutos, já que envolve a leitura de milhões de linhas no Spark.
+
+### Inspecionar os resultados
+
+O banco do data warehouse fica acessível em `localhost:5433` (usuário `taxi`, banco `nyc_taxi`, senha definida no `.env`) por qualquer cliente PostgreSQL, como o DBeaver. Os indicadores finais ficam na materialized view `gold.mv_trip_indicators`.
+
+### Encerrar o ambiente
+
+Para parar os contêineres, mantendo os dados:
+
+```
+docker compose down
+```
+
+Para parar e apagar também os volumes (recomeçar do zero, com os bancos vazios):
+
+```
+docker compose down -v
+```
+
+### Nota sobre reprodutibilidade
+
+Fixei as versões de todas as imagens e dependências (PostgreSQL 16, Airflow 2.10.5, e assim por diante) para garantir que qualquer pessoa que rode o projeto obtenha exatamente o mesmo resultado. Validei o processo completo a partir de um clone limpo do repositório, seguindo exatamente estes passos.
 
 ---
 
