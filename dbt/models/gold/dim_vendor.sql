@@ -16,6 +16,6 @@ with vendors as (
 )
 
 select
-    vendorid,
+    vendorid as vendor_id,
     vendor_name
 from vendors

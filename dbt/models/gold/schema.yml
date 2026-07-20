@@ -15,7 +15,7 @@ models:
   - name: dim_vendor
     description: "Dimensao de fornecedores de tecnologia (TPEP)."
     columns:
-      - name: vendorid
+      - name: vendor_id
         tests:
           - unique
           - not_null
@@ -34,6 +34,14 @@ models:
     description: "Catalogo de motivos de invalidez."
     columns:
       - name: reason_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_location
+    description: "Dimensao de zonas de taxi da NYC (LocationID -> bairro/zona)."
+    columns:
+      - name: location_id
         tests:
           - unique
           - not_null

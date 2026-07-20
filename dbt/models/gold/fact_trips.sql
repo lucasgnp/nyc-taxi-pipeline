@@ -31,9 +31,11 @@ final as (
 
     select
         -- Chaves estrangeiras para as dimensoes
-        vendorid,
+        vendorid as vendor_id,
         payment_type,
         cast(to_char(pickup_date, 'YYYYMMDD') as integer) as pickup_date_id,
+        pulocationid as pu_location_id,
+        dolocationid as do_location_id,
 
         -- Medidas
         passenger_count,

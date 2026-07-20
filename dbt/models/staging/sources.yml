@@ -14,3 +14,5 @@ sources:
     tables:
       - name: brz_payment_type
         description: "Tabela de referencia de tipos de pagamento."
+      - name: brz_taxi_zone_lookup
+        description: "Tabela de referencia de zonas de taxi (LocationID -> bairro/zona)."
