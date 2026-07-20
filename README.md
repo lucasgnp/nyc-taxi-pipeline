@@ -142,19 +142,19 @@ cd nyc-taxi-pipeline
 
 ### Passo 2 — Configurar as variáveis de ambiente
 
-O projeto lê credenciais e configurações de um arquivo `.env`, que não é versionado. Crie o seu a partir do modelo fornecido:
+O projeto lê as credenciais de um arquivo `.env`. Crie o seu a partir do modelo, que já vem com valores padrão prontos para uso:
 
 ```
 cp .env.example .env
 ```
 
-O arquivo já vem com valores padrão de desenvolvimento que funcionam. Em **Linux ou WSL2**, ajuste a variável `AIRFLOW_UID` para o id do seu usuário, de modo que os arquivos criados pelos contêineres (como os logs do Airflow) tenham o dono correto no seu sistema:
+Se você estiver em **Linux ou WSL2**, rode também o comando abaixo. Ele ajusta uma variável para que os arquivos gerados pelos contêineres fiquem com a permissão correta no seu sistema (no macOS e no Windows isso não é necessário):
 
 ```
 sed -i "s/^AIRFLOW_UID=.*/AIRFLOW_UID=$(id -u)/" .env
 ```
 
-Em macOS ou Windows sem WSL, o valor padrão já funciona e este passo pode ser ignorado.
+Pronto. As senhas padrão do arquivo funcionam para rodar o projeto; você só precisa alterá-las se quiser.
 
 ### Passo 3 — Construir as imagens
 
