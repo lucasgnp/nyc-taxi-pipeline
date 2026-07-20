@@ -131,7 +131,7 @@ Todo o projeto roda em contêineres Docker. Não é preciso instalar Python, Spa
 - **Docker e Docker Compose.** É o único software que precisa estar instalado na máquina. A forma mais simples de obter os dois é instalar o [Docker Desktop](https://www.docker.com/products/docker-desktop/), que já inclui o Docker Compose. No Windows, o Docker Desktop roda sobre o WSL2 e o configura durante a instalação; em Linux e macOS, roda de forma nativa.
 - **Cerca de 8 GB de memória** disponíveis para os contêineres, já que o Airflow e o Spark rodam ao mesmo tempo.
 
-Todos os comandos abaixo são executados em um terminal, a partir da pasta raiz do projeto (a pasta criada ao clonar o repositório).
+Todos os comandos abaixo são executados a partir da pasta raiz do projeto (a pasta criada ao clonar o repositório), em qualquer terminal com Docker disponível: PowerShell ou CMD no Windows, ou um terminal Linux (nativo ou via WSL2). O único comando exclusivo de Linux/WSL2 é o ajuste do `AIRFLOW_UID` no Passo 2; em outros sistemas ele pode ser ignorado.
 
 ### Passo 1 — Clonar o repositório
 
