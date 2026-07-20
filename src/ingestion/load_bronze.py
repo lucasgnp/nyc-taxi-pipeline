@@ -17,7 +17,7 @@ from src.common import config
 
 logger = logging.getLogger(__name__)
 
-TARGET_TABLE = "bronze.yellow_tripdata"
+TARGET_TABLE = "bronze.brz_yellow_tripdata"
 BATCH_SIZE = 200_000
 
 # Colunas da origem, na ordem e com o nome exatos do parquet da TLC.

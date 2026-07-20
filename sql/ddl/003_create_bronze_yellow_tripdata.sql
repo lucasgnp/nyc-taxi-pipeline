@@ -3,7 +3,7 @@
 -- Nomes apenas em minusculas, para evitar identificadores com aspas no Postgres.
 -- Nenhuma transformacao de valor acontece aqui.
 
-CREATE TABLE IF NOT EXISTS bronze.yellow_tripdata (
+CREATE TABLE IF NOT EXISTS bronze.brz_yellow_tripdata (
     -- Colunas da origem
     vendorid              INTEGER,
     tpep_pickup_datetime  TIMESTAMP,
@@ -33,13 +33,13 @@ CREATE TABLE IF NOT EXISTS bronze.yellow_tripdata (
     ingested_at           TIMESTAMP   NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE bronze.yellow_tripdata IS
+COMMENT ON TABLE bronze.brz_yellow_tripdata IS
     'Copia bruta das corridas de taxi amarelo da NYC TLC. Sem tratamento. '
     'Particionada logicamente por competencia (year, month).';
 
-COMMENT ON COLUMN bronze.yellow_tripdata.year IS 'Competencia derivada do arquivo de origem, nao do dado.';
-COMMENT ON COLUMN bronze.yellow_tripdata.month IS 'Competencia derivada do arquivo de origem, nao do dado.';
-COMMENT ON COLUMN bronze.yellow_tripdata.source_file IS 'Arquivo parquet que originou a linha. Rastreabilidade.';
+COMMENT ON COLUMN bronze.brz_yellow_tripdata.year IS 'Competencia derivada do arquivo de origem, nao do dado.';
+COMMENT ON COLUMN bronze.brz_yellow_tripdata.month IS 'Competencia derivada do arquivo de origem, nao do dado.';
+COMMENT ON COLUMN bronze.brz_yellow_tripdata.source_file IS 'Arquivo parquet que originou a linha. Rastreabilidade.';
 
-CREATE INDEX IF NOT EXISTS idx_bronze_yellow_tripdata_competencia
-    ON bronze.yellow_tripdata (year, month);
+CREATE INDEX IF NOT EXISTS idx_brz_yellow_tripdata_competencia
+    ON bronze.brz_yellow_tripdata (year, month);

@@ -1,30 +1,27 @@
 """Job PySpark: camada bronze do lake para silver.yellow_tripdata no warehouse.
 
-Le os parquets crus de UMA competencia, calcula as colunas derivadas, avalia as
+Lê os parquets crus de UMA competência, calcula as colunas derivadas, avalia as
 regras de qualidade e grava o resultado no Postgres.
 
-Nenhuma linha e descartada. Anomalia e sinalizada, nao removida: decidir o que
-fazer com ela e responsabilidade de quem consome a camada.
+Nenhuma linha é descartada. Anomalia é sinalizada, não removida: decidir o que
+fazer com ela é responsabilidade de quem consome a camada.
 """
 
 from __future__ import annotations
-
 import argparse
 import calendar
 import logging
 from datetime import date, timedelta
-
 from pyspark.sql import DataFrame, SparkSession # type: ignore
 from pyspark.sql import functions as F # type: ignore
 from pyspark.sql import types as T # type: ignore
 from sqlalchemy import create_engine, text # type: ignore
-
 from src.common import config
 
 logger = logging.getLogger(__name__)
 
-TARGET_TABLE = "silver.yellow_tripdata"
-SOURCE_PAYMENT_TABLE = "bronze.payment_type"
+TARGET_TABLE = "silver.slv_yellow_tripdata"
+SOURCE_PAYMENT_TABLE = "bronze.brz_payment_type"
 
 MAX_DURATION_MINUTES = 6 * 60
 MAX_DISTANCE_MILES = 100
@@ -79,7 +76,7 @@ def read_bronze(spark: SparkSession, year: int, month: int) -> DataFrame:
     path = str(config.bronze_partition_path(year, month))
     logger.info("Lendo parquet de %s", path)
     frame = spark.read.schema(BRONZE_SCHEMA).parquet(path)
-    # Bronze e cru e tem casing inconsistente na origem. Padronizo aqui.
+    # Bronze é cru e tem casing inconsistente na origem. Padronizo aqui.
     return frame.toDF(*[c.lower() for c in frame.columns])
 
 
@@ -119,8 +116,8 @@ def quality_rules(year: int, month: int) -> list[tuple[str, "F.Column"]]:
          F.col("total_amount") < 0),
 
         # Tolerancia de 1 dia: corrida que comeca 23h59 do dia 31 e aparece no
-        # arquivo do mes seguinte e normal. Corrida de 2007 num arquivo de 2025
-        # e lixo. A margem separa as duas.
+        # arquivo do mes seguinte é normal. Corrida de 2007 num arquivo de 2025
+        # é lixo. A margem separa as duas.
         ("embarque_fora_da_competencia",
          (F.col("pickup_date") < F.lit(floor_date))
          | (F.col("pickup_date") > F.lit(ceiling_date))),
@@ -135,6 +132,7 @@ def transform(spark: SparkSession, year: int, month: int) -> DataFrame:
         trips
         .withColumn("pickup_date", F.to_date("tpep_pickup_datetime"))
         .withColumn("pickup_year_month", F.date_format("tpep_pickup_datetime", "yyyyMM"))
+        .withColumn("store_and_fwd_flag", F.upper(F.trim(F.col("store_and_fwd_flag"))))
         .withColumn(
             "trip_duration_minutes",
             F.round(
@@ -146,7 +144,7 @@ def transform(spark: SparkSession, year: int, month: int) -> DataFrame:
     )
 
     # broadcast: a tabela de pagamentos tem 6 linhas. Sem isso o Spark faria um
-    # shuffle de 3,5 milhoes de linhas para juntar com uma tabela ridicula.
+    # shuffle de 3,5 milhões de linhas para juntar com uma tabela insignificante.
     trips = trips.join(
         F.broadcast(payments),
         on=trips["payment_type"] == payments["payment_type"],
@@ -165,6 +163,10 @@ def transform(spark: SparkSession, year: int, month: int) -> DataFrame:
             F.when(joined_reasons == "", None).otherwise(joined_reasons),
         )
         .withColumn("is_valid_trip", F.col("invalid_reason").isNull())
+        .withColumn(
+            "is_incomplete_record",
+            F.coalesce(F.col("passenger_count") == 0, F.lit(False)),
+        )
         .withColumn("year", F.lit(year).cast(T.ShortType()))
         .withColumn("month", F.lit(month).cast(T.ShortType()))
     )
@@ -190,13 +192,13 @@ def transform(spark: SparkSession, year: int, month: int) -> DataFrame:
         "payment_type", "payment_description", "is_valid_payment",
         *MONEY_COLUMNS,
         "pickup_date", "pickup_year_month", "trip_duration_minutes",
-        "is_valid_trip", "invalid_reason",
+        "is_valid_trip", "is_incomplete_record", "invalid_reason",
         "year", "month",
     )
 
 
 def delete_competencia(year: int, month: int) -> int:
-    """Apaga a competencia antes da regravacao. Chave e o arquivo, nao o embarque."""
+    """Apaga a competencia antes da regravação. Chave é o arquivo, não o embarque."""
     engine = create_engine(config.sqlalchemy_url())
     try:
         with engine.begin() as connection:
