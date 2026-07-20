@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: dim_payment
+    description: "Dimensao de tipos de pagamento, fiel a tabela do item 4 no enunciado do desafio prático."
+    columns:
+      - name: payment_type
+        description: "Codigo do tipo de pagamento. Chave da dimensao."
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6]
+
+  - name: dim_vendor
+    description: "Dimensao de fornecedores de tecnologia (TPEP)."
+    columns:
+      - name: vendorid
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: [1, 2, 6, 7]
+
+  - name: dim_date
+    description: "Dimensao de calendario, 2020 a 2030."
+    columns:
+      - name: date_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_invalid_reason
+    description: "Catalogo de motivos de invalidez."
+    columns:
+      - name: reason_id
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_trips
+    description: "Fato de corridas. Grao: uma linha por corrida."
+    columns:
+      - name: is_valid_trip
+        description: "Flag de validade. Nunca nula."
+        tests:
+          - not_null
+      - name: payment_type
+        description: "FK para dim_payment. Aceita 0 (Flex Fare) alem de 1-6."
+        tests:
+          - not_null

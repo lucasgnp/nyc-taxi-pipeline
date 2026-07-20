@@ -22,6 +22,10 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt"
 
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt
+
 # dbt em ambiente isolado: ele tem dependencias (jinja2, click) que conflitam
 # com as versoes pinadas do Airflow. Um venv dedicado mantem os dois universos
 # separados na mesma imagem. A DAG chama o dbt pelo caminho absoluto do venv.
