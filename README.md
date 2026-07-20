@@ -136,7 +136,7 @@ Todos os comandos abaixo são executados em um terminal, a partir da pasta raiz 
 ### Passo 1 — Clonar o repositório
 
 ```
-git clone <url-do-repositorio>
+git clone https://github.com/lucasgnp/nyc-taxi-pipeline.git
 cd nyc-taxi-pipeline
 ```
 
