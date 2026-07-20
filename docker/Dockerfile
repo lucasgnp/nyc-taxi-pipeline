@@ -21,3 +21,12 @@ COPY requirements.txt /tmp/requirements.txt
 
 RUN pip install --no-cache-dir -r /tmp/requirements.txt \
     --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt"
+
+# dbt em ambiente isolado: ele tem dependencias (jinja2, click) que conflitam
+# com as versoes pinadas do Airflow. Um venv dedicado mantem os dois universos
+# separados na mesma imagem. A DAG chama o dbt pelo caminho absoluto do venv.
+USER root
+RUN python -m venv /opt/dbt-venv \
+    && /opt/dbt-venv/bin/pip install --no-cache-dir "dbt-postgres==1.9.0" \
+    && ln -s /opt/dbt-venv/bin/dbt /usr/local/bin/dbt
+USER airflow

@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: silver
+    schema: silver
+    description: "Camada silver: corridas tratadas com regras de qualidade aplicadas."
+    tables:
+      - name: slv_yellow_tripdata
+        description: "Corridas de taxi amarelo tratadas, uma linha por corrida."
+
+  - name: bronze
+    schema: bronze
+    description: "Camada bronze: dados brutos e tabelas de referencia."
+    tables:
+      - name: brz_payment_type
+        description: "Tabela de referencia de tipos de pagamento."
