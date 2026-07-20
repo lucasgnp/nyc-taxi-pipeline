@@ -219,6 +219,7 @@ Analisar os dados antes de modelá-los revelou coisas que mudaram decisões do p
 
 A camada gold segue um esquema estrela, com uma tabela fato central e dimensões ao redor.
 
+
 ```mermaid
 erDiagram
     dim_vendor ||--o{ fact_trips : "vendor_id"
@@ -285,6 +286,7 @@ erDiagram
 ```
 
 O diagrama mostra a fato `fact_trips` no centro, ligada às dimensões pelas chaves estrangeiras. A `dim_location` aparece ligada duas vezes à fato, uma para o local de embarque e outra para o de desembarque, a depender da necessidade analítica. A `dim_invalid_reason` aparece sem ligação direta com a fato porque o motivo da invalidez é hoje um campo de texto na fato; ela funciona como catálogo de referência dos motivos, e a ligação formal muitos-para-muitos seria feita por uma tabela ponte, descrita na seção de evoluções.
+
 
 **Fato:** 
 
