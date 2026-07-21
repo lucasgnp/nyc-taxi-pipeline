@@ -8,9 +8,9 @@ o resultado (cada camada faz delete+insert por competência).
 """
 
 from __future__ import annotations
-import pendulum
-from airflow.models.dag import DAG
-from airflow.operators.bash import BashOperator
+import pendulum # type: ignore
+from airflow.models.dag import DAG # type: ignore
+from airflow.operators.bash import BashOperator # type: ignore
 
 # A competência vem da data lógica do Airflow via template Jinja.
 # {{ data_interval_start }} é o inicio do intervalo que a execução representa.
