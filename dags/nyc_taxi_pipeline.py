@@ -68,7 +68,6 @@ with DAG(
         task_id="process_gold",
         bash_command=(
             f"dbt run --project-dir {DBT_DIR} --profiles-dir {DBT_DIR} "
-            f"--select fact_trips mv_trip_indicators "
             f"--vars '{{year: {YEAR}, month: {MONTH}}}'"
         ),
     )
