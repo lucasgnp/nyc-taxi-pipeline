@@ -203,8 +203,9 @@ A DAG `nyc_taxi_pipeline` processa uma competência mensal por execução, deriv
 ```
 docker compose exec airflow-scheduler airflow dags test nyc_taxi_pipeline 2025-06-15
 ```
+Para processar as demais competências, repita o comando trocando a data (por exemplo, 2025-01-15 para janeiro), ou dispare execuções manuais pela própria interface do Airflow, em Trigger DAG w/ config.
 
-O comando acima processa a competência de junho de 2025: baixa o arquivo Parquet, carrega na bronze, gera a silver com as regras de qualidade e atualiza a gold. O processamento leva alguns minutos, já que envolve a leitura de milhões de linhas no Spark.
+O processamento de uma competência leva poucos minutos. Para as seis competências completas, o tempo total fica em torno de 15 a 20 minutos, já que o Spark processa alguns milhões de linhas por mês.
 
 ### Inspecionar os resultados
 
